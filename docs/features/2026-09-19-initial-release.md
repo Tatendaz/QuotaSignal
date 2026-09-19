@@ -13,8 +13,10 @@ Users need to see weekly remaining usage while they work without repeatedly open
 
 ## What changed
 
-- Added an adaptive OpenAI provider icon and weekly percentage on macOS, with separate visibility
-  controls for each, plus a Windows notification-area icon.
+- Added the weekly percentage on macOS with an optional adaptive OpenAI provider icon and separate
+  visibility controls, plus a Windows notification-area icon.
+- Added a startup notification with the current weekly quota so a crowded menu bar cannot make a
+  successful launch look like a failure.
 - Added live weekly and session quota reads through the authenticated local Codex app server.
 - Added cached fallback values and configurable threshold notifications.
 - Added portable ChatGPT/Codex plugin metadata and an installation skill.

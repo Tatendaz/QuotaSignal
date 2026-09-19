@@ -46,19 +46,19 @@ def test_find_menu_bar_icon_returns_first_installed_candidate(tmp_path):
     assert tray.find_menu_bar_icon([missing, installed]) == installed
 
 
-def test_menu_preferences_default_to_percentage_and_icon_and_round_trip(tmp_path):
+def test_menu_preferences_default_to_percentage_only_and_round_trip(tmp_path):
     path = tmp_path / "preferences.json"
 
-    assert tray.load_menu_preferences(path) == (True, True)
+    assert tray.load_menu_preferences(path) == (True, False)
     tray.save_menu_preferences(False, True, path)
     assert tray.load_menu_preferences(path) == (False, True)
 
 
-def test_old_percentage_preference_keeps_icon_enabled(tmp_path):
+def test_old_percentage_preference_uses_compact_icon_default(tmp_path):
     path = tmp_path / "preferences.json"
     path.write_text('{"show_percentage": false}', encoding="utf-8")
 
-    assert tray.load_menu_preferences(path) == (False, True)
+    assert tray.load_menu_preferences(path) == (True, False)
 
 
 def test_menu_title_is_icon_only_by_default():
@@ -70,6 +70,12 @@ def test_menu_title_is_icon_only_by_default():
 def test_menu_title_falls_back_to_quota_signal_initial_when_icon_is_missing():
     assert tray.menu_bar_title(usage(), show_percentage=False, has_icon=False) == "Q 97%"
     assert tray.menu_bar_title(None, show_percentage=False, has_icon=False) == "Q …"
+
+
+def test_startup_message_confirms_usage_and_explains_menu_overflow():
+    assert tray.startup_message(usage()) == (
+        "Weekly quota: 97% left. If the status item is hidden, your menu bar may be full."
+    )
 
 
 def test_run_tray_dispatches_to_macos(monkeypatch):

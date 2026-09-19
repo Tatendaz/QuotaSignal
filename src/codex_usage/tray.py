@@ -42,19 +42,18 @@ def find_menu_bar_icon(candidates: Iterable[Path] | None = None) -> Path | None:
 
 
 def load_menu_preferences(path: Path = PREFERENCES_FILE) -> tuple[bool, bool]:
-    """Return percentage and icon visibility, both enabled by default."""
+    """Default to the narrow percentage-only layout for crowded menu bars."""
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError):
-        return True, True
+        return True, False
     if not isinstance(value, dict):
-        return True, True
+        return True, False
     percentage = value.get("show_percentage")
     icon = value.get("show_icon")
-    return (
-        percentage if isinstance(percentage, bool) else True,
-        icon if isinstance(icon, bool) else True,
-    )
+    show_percentage = percentage if isinstance(percentage, bool) else True
+    show_icon = icon if isinstance(icon, bool) else False
+    return (show_percentage, show_icon) if show_percentage or show_icon else (True, False)
 
 
 def save_menu_preferences(
@@ -94,6 +93,13 @@ def menu_bar_title(
     if show_percentage:
         return marker
     return "" if has_icon else f"Q {marker}"
+
+
+def startup_message(usage: Usage) -> str:
+    return (
+        f"Weekly quota: {usage.weekly.remaining_percent}% left. "
+        "If the status item is hidden, your menu bar may be full."
+    )
 
 
 class UsageSource:
@@ -138,6 +144,7 @@ def run_macos() -> None:
             self._show_percentage, self._show_icon = load_menu_preferences()
             self._show_icon = self._show_icon and self._icon_path is not None
             self._usage: Usage | None = None
+            self._announced_running = False
             super().__init__(
                 APP_NAME,
                 title=menu_bar_title(
@@ -203,6 +210,9 @@ def run_macos() -> None:
                 self._usage = usage
                 self._update_title()
                 self.details.title = format_usage(usage)
+                if not self._announced_running:
+                    rumps.notification(APP_NAME, "Running", startup_message(usage))
+                    self._announced_running = True
                 for message in pending_notifications(usage):
                     rumps.notification(APP_NAME, "Weekly quota", message)
             else:
