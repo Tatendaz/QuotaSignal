@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 import os
 import tempfile
-from pathlib import Path
 
 from .core import Usage
+from .paths import user_dir
 
-CONFIG_ROOT = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "codex-usage"
+CONFIG_ROOT = user_dir("XDG_CONFIG_HOME", ".config")
 CONFIG_FILE = CONFIG_ROOT / "config.json"
 STATE_FILE = CONFIG_ROOT / "notification-state.json"
 DEFAULT_THRESHOLDS = (50, 20, 10)
@@ -20,11 +20,20 @@ def load_thresholds() -> tuple[int, ...]:
         config = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return DEFAULT_THRESHOLDS
-    if config.get("notifications", {}).get("enabled", True) is False:
+    section = config.get("notifications") if isinstance(config, dict) else None
+    if not isinstance(section, dict):
+        return DEFAULT_THRESHOLDS
+    if section.get("enabled", True) is False:
         return ()
-    values = config.get("notifications", {}).get("remaining_thresholds", DEFAULT_THRESHOLDS)
+    values = section.get("remaining_thresholds", DEFAULT_THRESHOLDS)
+    if not isinstance(values, (list, tuple)):
+        return DEFAULT_THRESHOLDS
     valid = sorted(
-        {int(item) for item in values if isinstance(item, (int, float)) and 0 <= item <= 100},
+        {
+            int(item)
+            for item in values
+            if isinstance(item, (int, float)) and not isinstance(item, bool) and 0 <= item <= 100
+        },
         reverse=True,
     )
     return tuple(valid)
@@ -52,15 +61,21 @@ def _write_state(value: dict[str, object]) -> None:
 
 
 def pending_notifications(usage: Usage) -> list[str]:
-    """Return newly crossed weekly thresholds and persist their delivery ledger."""
+    """Return one message when new weekly thresholds are crossed, and persist the ledger."""
     reset_key = str(usage.weekly.resets_at or "unknown")
     state = _read_state()
-    sent = set(state.get("sent", [])) if state.get("reset") == reset_key else set()
-    messages: list[str] = []
-    for threshold in load_thresholds():
-        key = str(threshold)
-        if usage.weekly.remaining_percent <= threshold and key not in sent:
-            messages.append(f"{usage.weekly.remaining_percent}% of your weekly quota remains")
-            sent.add(key)
-    _write_state({"reset": reset_key, "sent": sorted(sent)})
-    return messages
+    previous = state.get("sent")
+    sent = (
+        {str(item) for item in previous}
+        if state.get("reset") == reset_key and isinstance(previous, list)
+        else set()
+    )
+    crossed = {
+        str(threshold)
+        for threshold in load_thresholds()
+        if usage.weekly.remaining_percent <= threshold
+    } - sent
+    _write_state({"reset": reset_key, "sent": sorted(sent | crossed)})
+    if not crossed:
+        return []
+    return [f"{usage.weekly.remaining_percent}% of your weekly quota remains"]

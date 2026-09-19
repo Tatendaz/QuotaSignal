@@ -1,4 +1,4 @@
-from codex_usage.core import format_usage, parse_usage
+from quotasignal.core import format_usage, parse_usage
 
 
 def payload(primary_used=12, secondary_used=34):
@@ -37,7 +37,7 @@ def test_parse_usage_selects_longest_window_as_weekly():
 def test_format_compact_emphasizes_weekly_remaining():
     usage = parse_usage(payload(4, 21), fetched_at=1_900_000_000)
 
-    assert format_usage(usage, compact=True) == "C 79%"
+    assert format_usage(usage, compact=True) == "Q 79%"
 
 
 def test_legacy_snapshot_is_supported():

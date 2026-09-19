@@ -11,7 +11,7 @@ from .protocol import CodexProtocolError
 
 def parser() -> argparse.ArgumentParser:
     value = argparse.ArgumentParser(
-        prog="codex-usage",
+        prog="quotasignal",
         description="Show the shared ChatGPT and Codex quota.",
     )
     value.add_argument(
@@ -38,7 +38,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         usage = cached_or_fetch(ttl=0 if args.fresh or args.check else 60)
     except CodexProtocolError as exc:
-        print(f"codex-usage: {exc}")
+        print(f"quotasignal: {exc}")
         return 1
     if args.check:
         print(f"check passed: {format_usage(usage)}")

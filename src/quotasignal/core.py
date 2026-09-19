@@ -8,14 +8,14 @@ import tempfile
 import time
 from dataclasses import asdict, dataclass, replace
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
+from .paths import user_dir
 from .protocol import AppServerClient, CodexProtocolError
 
 WEEK_MINUTES = 7 * 24 * 60
-DEFAULT_TTL = int(os.environ.get("CODEX_USAGE_TTL", "60"))
-CACHE_ROOT = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "codex-usage"
+DEFAULT_TTL = int(os.environ.get("QUOTASIGNAL_TTL", "60"))
+CACHE_ROOT = user_dir("XDG_CACHE_HOME", ".cache")
 CACHE_FILE = CACHE_ROOT / "usage.json"
 
 
@@ -101,9 +101,7 @@ def parse_usage(payload: dict[str, Any], fetched_at: int | None = None) -> Usage
     weekly = Window(**{**asdict(weekly), "name": "week"})
     if session:
         label = (
-            "5h"
-            if session.duration_minutes and session.duration_minutes <= 6 * 60
-            else "session"
+            "5h" if session.duration_minutes and session.duration_minutes <= 6 * 60 else "session"
         )
         session = Window(**{**asdict(session), "name": label})
     plan = snapshot.get("planType")
@@ -182,7 +180,7 @@ def reset_text(timestamp: int | None) -> str:
 def format_usage(usage: Usage, compact: bool = False) -> str:
     stale = "~" if usage.stale else ""
     if compact:
-        return f"C {usage.weekly.remaining_percent}%{stale}"
+        return f"Q {usage.weekly.remaining_percent}%{stale}"
     parts = [f"week {usage.weekly.remaining_percent}% left"]
     if usage.session:
         parts.append(f"{usage.session.name} {usage.session.remaining_percent}% left")

@@ -11,18 +11,20 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from . import __version__
+
 
 class CodexProtocolError(RuntimeError):
     """The local Codex app-server could not provide a usage snapshot."""
 
 
 def find_codex() -> str:
-    override = os.environ.get("CODEX_USAGE_CODEX_BIN")
+    override = os.environ.get("QUOTASIGNAL_CODEX_BIN") or os.environ.get("CODEX_USAGE_CODEX_BIN")
     if override:
         path = Path(override).expanduser()
         if path.is_file():
             return str(path)
-        raise CodexProtocolError("CODEX_USAGE_CODEX_BIN does not point to a file")
+        raise CodexProtocolError("QUOTASIGNAL_CODEX_BIN does not point to a file")
 
     found = shutil.which("codex")
     if found:
@@ -31,6 +33,9 @@ def find_codex() -> str:
     candidates = [
         Path.home() / ".local" / "bin" / "codex",
         Path.home() / ".npm-global" / "bin" / "codex",
+        # launchd starts login items with a minimal PATH, so check the usual macOS prefixes.
+        Path("/opt/homebrew/bin/codex"),
+        Path("/usr/local/bin/codex"),
     ]
     if os.name == "nt":
         candidates.extend(
@@ -42,7 +47,7 @@ def find_codex() -> str:
     for candidate in candidates:
         if candidate.is_file():
             return str(candidate)
-    raise CodexProtocolError("Codex CLI was not found; install Codex or set CODEX_USAGE_CODEX_BIN")
+    raise CodexProtocolError("Codex CLI was not found; install Codex or set QUOTASIGNAL_CODEX_BIN")
 
 
 class AppServerClient:
@@ -62,6 +67,8 @@ class AppServerClient:
             text=True,
             encoding="utf-8",
             bufsize=1,
+            # The tray runs under pythonw on Windows; without this a console window flashes.
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
         )
         self._reader = threading.Thread(target=self._read_stdout, daemon=True)
         self._reader.start()
@@ -129,7 +136,11 @@ class AppServerClient:
         self._request(
             "initialize",
             {
-                "clientInfo": {"name": "codex-usage", "title": "Codex Usage", "version": "0.1.0"},
+                "clientInfo": {
+                    "name": "quotasignal",
+                    "title": "QuotaSignal",
+                    "version": __version__,
+                },
                 "capabilities": {"experimentalApi": True},
             },
         )

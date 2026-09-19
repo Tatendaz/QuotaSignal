@@ -1,7 +1,7 @@
 from test_core import payload
 
-from codex_usage import core
-from codex_usage.protocol import CodexProtocolError
+from quotasignal import core
+from quotasignal.protocol import CodexProtocolError
 
 
 class FailingClient:

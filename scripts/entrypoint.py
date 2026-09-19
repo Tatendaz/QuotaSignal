@@ -1,4 +1,4 @@
-from codex_usage.cli import main
+from quotasignal.cli import main
 
 if __name__ == "__main__":
     raise SystemExit(main())

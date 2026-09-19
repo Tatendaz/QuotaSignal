@@ -13,15 +13,12 @@ from pathlib import Path
 
 from .core import Usage, fetch_usage, format_usage
 from .notify import pending_notifications
+from .paths import user_dir
 from .protocol import AppServerClient, CodexProtocolError
 
 DASHBOARD_URL = "https://chatgpt.com/codex/settings/usage"
 APP_NAME = "QuotaSignal"
-PREFERENCES_FILE = (
-    Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    / "codex-usage"
-    / "preferences.json"
-)
+PREFERENCES_FILE = user_dir("XDG_CONFIG_HOME", ".config") / "preferences.json"
 
 
 def find_menu_bar_icon(candidates: Iterable[Path] | None = None) -> Path | None:
@@ -136,11 +133,11 @@ def run_macos() -> None:
     try:
         import rumps
     except ImportError as exc:
-        raise SystemExit('Install menu support with: pip install "codex-usage[menu]"') from exc
+        raise SystemExit('Install menu support with: pip install "quotasignal[menu]"') from exc
 
     source = UsageSource()
 
-    class CodexUsageApp(rumps.App):
+    class QuotaSignalApp(rumps.App):
         def __init__(self) -> None:
             self._icon_path = find_menu_bar_icon()
             self._show_percentage, self._show_icon = load_menu_preferences()
@@ -158,9 +155,7 @@ def run_macos() -> None:
                 template=True,
                 quit_button=None,
             )
-            self._updates: queue.SimpleQueue[tuple[Usage | None, str | None]] = (
-                queue.SimpleQueue()
-            )
+            self._updates: queue.SimpleQueue[tuple[Usage | None, str | None]] = queue.SimpleQueue()
             self.details = rumps.MenuItem("Loading usage…")
             self.percentage_item = rumps.MenuItem(
                 "Use percentage-only display",
@@ -259,7 +254,7 @@ def run_macos() -> None:
             source.close()
             rumps.quit_application()
 
-    CodexUsageApp().run()
+    QuotaSignalApp().run()
 
 
 def run_windows() -> None:
@@ -267,7 +262,7 @@ def run_windows() -> None:
         import pystray
         from PIL import Image, ImageDraw, ImageFont
     except ImportError as exc:
-        raise SystemExit('Install tray support with: pip install "codex-usage[menu]"') from exc
+        raise SystemExit('Install tray support with: pip install "quotasignal[menu]"') from exc
 
     source = UsageSource()
     current = {"usage": None}
@@ -301,7 +296,7 @@ def run_windows() -> None:
         icon.stop()
 
     icon = pystray.Icon(
-        "codex-usage",
+        "quotasignal",
         image_for(None),
         APP_NAME,
         menu=pystray.Menu(

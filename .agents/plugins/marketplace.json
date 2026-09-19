@@ -1,11 +1,11 @@
 {
-  "name": "codex-usage",
+  "name": "quotasignal",
   "interface": {
-    "displayName": "Codex Usage"
+    "displayName": "QuotaSignal"
   },
   "plugins": [
     {
-      "name": "codex-usage",
+      "name": "quotasignal",
       "source": {
         "source": "local",
         "path": "./"

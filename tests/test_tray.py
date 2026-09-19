@@ -1,6 +1,6 @@
-from codex_usage import tray
-from codex_usage.core import Usage, Window
-from codex_usage.protocol import CodexProtocolError
+from quotasignal import tray
+from quotasignal.core import Usage, Window
+from quotasignal.protocol import CodexProtocolError
 
 
 def usage() -> Usage:

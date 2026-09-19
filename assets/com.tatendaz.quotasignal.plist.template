@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
   <key>Label</key>
-  <string>com.tatendaz.codex-usage</string>
+  <string>com.tatendaz.quotasignal</string>
   <key>ProgramArguments</key>
   <array>
     <string>__PROGRAM__</string>
@@ -11,8 +11,16 @@
   </array>
   <key>RunAtLoad</key>
   <true/>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>QUOTASIGNAL_CODEX_BIN</key>
+    <string>__CODEX_BIN__</string>
+  </dict>
   <key>KeepAlive</key>
-  <true/>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
   <key>ProcessType</key>
   <string>Interactive</string>
 </dict>

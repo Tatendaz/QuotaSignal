@@ -1,5 +1,5 @@
 {
-  "name": "codex-usage",
+  "name": "quotasignal",
   "version": "0.1.0",
   "description": "Show the shared ChatGPT and Codex quota in the macOS menu bar or Windows system tray.",
   "author": {
@@ -8,13 +8,13 @@
   },
   "skills": "./skills/",
   "interface": {
-    "displayName": "Codex Usage",
+    "displayName": "QuotaSignal",
     "shortDescription": "Live ChatGPT and Codex quota in your system status area.",
-    "longDescription": "Install, configure, and troubleshoot the Codex Usage menu-bar and system-tray app. It shows the remaining shared ChatGPT and Codex weekly quota and can notify you at configurable thresholds.",
+    "longDescription": "Install, configure, and troubleshoot the QuotaSignal menu-bar and system-tray app. It shows the remaining shared ChatGPT and Codex weekly quota and can notify you at configurable thresholds.",
     "developerName": "Tatendaz",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
-    "websiteURL": "https://github.com/Tatendaz/codex-usage",
-    "defaultPrompt": "Install Codex Usage and verify that my shared ChatGPT and Codex weekly quota appears in the system status area."
+    "websiteURL": "https://github.com/Tatendaz/QuotaSignal",
+    "defaultPrompt": "Install QuotaSignal and verify that my shared ChatGPT and Codex weekly quota appears in the system status area."
   }
 }

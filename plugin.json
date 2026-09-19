@@ -1,29 +1,29 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
-  "name": "codex-usage",
+  "name": "quotasignal",
   "version": "0.1.0",
   "description": "Show the shared ChatGPT and Codex quota in the macOS menu bar or Windows system tray.",
   "author": {
     "name": "Tatendaz",
     "url": "https://github.com/Tatendaz"
   },
-  "homepage": "https://github.com/Tatendaz/codex-usage",
-  "repository": "https://github.com/Tatendaz/codex-usage",
+  "homepage": "https://github.com/Tatendaz/QuotaSignal",
+  "repository": "https://github.com/Tatendaz/QuotaSignal",
   "license": "MIT",
   "keywords": ["chatgpt", "codex", "usage", "menu-bar", "system-tray", "notifications"],
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Codex Usage",
+        "displayName": "QuotaSignal",
         "shortDescription": "Live ChatGPT and Codex quota in your system status area.",
-        "longDescription": "Install, configure, and troubleshoot the Codex Usage menu-bar and system-tray app.",
+        "longDescription": "Install, configure, and troubleshoot the QuotaSignal menu-bar and system-tray app.",
         "developerName": "Tatendaz",
         "category": "Productivity",
         "capabilities": ["Read", "Write"],
-        "websiteURL": "https://github.com/Tatendaz/codex-usage",
+        "websiteURL": "https://github.com/Tatendaz/QuotaSignal",
         "defaultPrompt": [
-          "Install Codex Usage and verify my weekly quota.",
-          "Configure Codex Usage notifications."
+          "Install QuotaSignal and verify my weekly quota.",
+          "Configure QuotaSignal notifications."
         ],
         "brandColor": "#111111"
       }
