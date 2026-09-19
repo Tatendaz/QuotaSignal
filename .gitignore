@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+*.spec
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx

@@ -1,0 +1,20 @@
+{
+  "name": "codex-usage",
+  "version": "0.1.0",
+  "description": "Show the shared ChatGPT and Codex quota in the macOS menu bar or Windows system tray.",
+  "author": {
+    "name": "Tatendaz",
+    "url": "https://github.com/Tatendaz"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Usage",
+    "shortDescription": "Live ChatGPT and Codex quota in your system status area.",
+    "longDescription": "Install, configure, and troubleshoot the Codex Usage menu-bar and system-tray app. It shows the remaining shared ChatGPT and Codex weekly quota and can notify you at configurable thresholds.",
+    "developerName": "Tatendaz",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/Tatendaz/codex-usage",
+    "defaultPrompt": "Install Codex Usage and verify that my shared ChatGPT and Codex weekly quota appears in the system status area."
+  }
+}
