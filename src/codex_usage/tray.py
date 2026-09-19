@@ -2,17 +2,79 @@
 
 from __future__ import annotations
 
+import json
+import os
 import platform
 import queue
 import threading
 import webbrowser
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
+from pathlib import Path
 
 from .core import Usage, fetch_usage, format_usage
 from .notify import pending_notifications
 from .protocol import AppServerClient, CodexProtocolError
 
 DASHBOARD_URL = "https://chatgpt.com/codex/settings/usage"
+APP_NAME = "QuotaSignal"
+PREFERENCES_FILE = (
+    Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    / "codex-usage"
+    / "preferences.json"
+)
+
+
+def find_codex_icon(candidates: Iterable[Path] | None = None) -> Path | None:
+    """Find an official Codex app icon without copying or modifying it."""
+    if candidates is None:
+        resource_roots = (
+            Path("/Applications/ChatGPT.app/Contents/Resources"),
+            Path("/Applications/Codex.app/Contents/Resources"),
+            Path.home() / "Applications/ChatGPT.app/Contents/Resources",
+            Path.home() / "Applications/Codex.app/Contents/Resources",
+        )
+        candidates = (
+            root / filename
+            for root in resource_roots
+            for filename in ("icon-codex-dark-color.png", "icon-codex-light.png")
+        )
+    return next((path for path in candidates if path.is_file()), None)
+
+
+def load_show_percentage(path: Path = PREFERENCES_FILE) -> bool:
+    """Return the saved menu-bar preference, defaulting to the narrow icon-only mode."""
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return False
+    return value.get("show_percentage") is True if isinstance(value, dict) else False
+
+
+def save_show_percentage(show: bool, path: Path = PREFERENCES_FILE) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"show_percentage": show}), encoding="utf-8")
+    os.chmod(temporary, 0o600)
+    os.replace(temporary, path)
+
+
+def menu_bar_title(
+    usage: Usage | None,
+    *,
+    show_percentage: bool,
+    has_icon: bool,
+    failed: bool = False,
+) -> str:
+    """Keep the status item visible even if the official icon cannot be found."""
+    if usage is not None:
+        percent = f"{usage.weekly.remaining_percent}%{'~' if usage.stale else ''}"
+        if has_icon:
+            return percent if show_percentage else ""
+        return f"Q {percent}"
+    marker = "!" if failed else "…"
+    if has_icon and not show_percentage:
+        return ""
+    return marker if has_icon else f"Q {marker}"
 
 
 class UsageSource:
@@ -53,11 +115,29 @@ def run_macos() -> None:
 
     class CodexUsageApp(rumps.App):
         def __init__(self) -> None:
-            super().__init__("Codex Usage", title="C …", quit_button=None)
+            self._icon_path = find_codex_icon()
+            self._show_percentage = load_show_percentage()
+            self._usage: Usage | None = None
+            super().__init__(
+                APP_NAME,
+                title=menu_bar_title(
+                    None,
+                    show_percentage=self._show_percentage,
+                    has_icon=self._icon_path is not None,
+                ),
+                icon=str(self._icon_path) if self._icon_path else None,
+                template=False,
+                quit_button=None,
+            )
             self._updates: queue.SimpleQueue[tuple[Usage | None, str | None]] = (
                 queue.SimpleQueue()
             )
             self.details = rumps.MenuItem("Loading usage…")
+            self.percentage_item = rumps.MenuItem(
+                "Show percentage in menu bar",
+                callback=self.toggle_percentage,
+            )
+            self.percentage_item.state = self._show_percentage
             self.menu = [
                 self.details,
                 rumps.MenuItem("Refresh now", callback=self.refresh),
@@ -65,8 +145,9 @@ def run_macos() -> None:
                     "Open usage dashboard",
                     callback=lambda _: webbrowser.open(DASHBOARD_URL),
                 ),
+                self.percentage_item,
                 None,
-                rumps.MenuItem("Quit Codex Usage", callback=self.quit_app),
+                rumps.MenuItem(f"Quit {APP_NAME}", callback=self.quit_app),
             ]
             self.timer = rumps.Timer(self.refresh, 60)
             self.timer.start()
@@ -92,13 +173,32 @@ def run_macos() -> None:
 
         def _updated(self, usage: Usage | None, error: str | None) -> None:
             if usage:
-                self.title = format_usage(usage, compact=True)
+                self._usage = usage
+                self._update_title()
                 self.details.title = format_usage(usage)
                 for message in pending_notifications(usage):
-                    rumps.notification("Codex Usage", "Weekly quota", message)
+                    rumps.notification(APP_NAME, "Weekly quota", message)
             else:
-                self.title = "Codex !"
+                self.title = menu_bar_title(
+                    None,
+                    show_percentage=self._show_percentage,
+                    has_icon=self._icon_path is not None,
+                    failed=True,
+                )
                 self.details.title = error or "Usage unavailable"
+
+        def _update_title(self) -> None:
+            self.title = menu_bar_title(
+                self._usage,
+                show_percentage=self._show_percentage,
+                has_icon=self._icon_path is not None,
+            )
+
+        def toggle_percentage(self, item: object) -> None:
+            self._show_percentage = not self._show_percentage
+            self.percentage_item.state = self._show_percentage
+            save_show_percentage(self._show_percentage)
+            self._update_title()
 
         def quit_app(self, _: object) -> None:
             source.close()
@@ -129,10 +229,10 @@ def run_windows() -> None:
     def update(icon: pystray.Icon, usage: Usage | None, error: str | None) -> None:
         current["usage"] = usage
         icon.icon = image_for(usage.weekly.remaining_percent if usage else None)
-        icon.title = format_usage(usage) if usage else (error or "Codex Usage unavailable")
+        icon.title = format_usage(usage) if usage else (error or f"{APP_NAME} unavailable")
         if usage:
             for message in pending_notifications(usage):
-                icon.notify(message, "Codex Usage")
+                icon.notify(message, APP_NAME)
 
     def refresh(icon: pystray.Icon, _: object = None) -> None:
         threading.Thread(
@@ -148,7 +248,7 @@ def run_windows() -> None:
     icon = pystray.Icon(
         "codex-usage",
         image_for(None),
-        "Codex Usage",
+        APP_NAME,
         menu=pystray.Menu(
             pystray.MenuItem("Refresh now", refresh),
             pystray.MenuItem("Open usage dashboard", lambda *_: webbrowser.open(DASHBOARD_URL)),

@@ -13,7 +13,8 @@ Users need to see weekly remaining usage while they work without repeatedly open
 
 ## What changed
 
-- Added a macOS menu-bar title and Windows notification-area icon.
+- Added a compact Codex provider icon on macOS, with an optional inline percentage, and a
+  Windows notification-area icon.
 - Added live weekly and session quota reads through the authenticated local Codex app server.
 - Added cached fallback values and configurable threshold notifications.
 - Added portable ChatGPT/Codex plugin metadata and an installation skill.
