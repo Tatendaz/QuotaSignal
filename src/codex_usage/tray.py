@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import platform
+import queue
 import threading
 import webbrowser
 from collections.abc import Callable
@@ -14,9 +15,30 @@ from .protocol import AppServerClient, CodexProtocolError
 DASHBOARD_URL = "https://chatgpt.com/codex/settings/usage"
 
 
-def _poll(client: AppServerClient, callback: Callable[[Usage | None, str | None], None]) -> None:
+class UsageSource:
+    """Create the Codex connection on first refresh, after the tray UI is visible."""
+
+    def __init__(self, client_factory: Callable[[], AppServerClient] = AppServerClient) -> None:
+        self._client_factory = client_factory
+        self._client: AppServerClient | None = None
+        self._lock = threading.Lock()
+
+    def read(self) -> Usage:
+        with self._lock:
+            if self._client is None:
+                self._client = self._client_factory()
+            return fetch_usage(self._client)
+
+    def close(self) -> None:
+        with self._lock:
+            if self._client is not None:
+                self._client.close()
+                self._client = None
+
+
+def _poll(source: UsageSource, callback: Callable[[Usage | None, str | None], None]) -> None:
     try:
-        callback(fetch_usage(client), None)
+        callback(source.read(), None)
     except CodexProtocolError as exc:
         callback(None, str(exc))
 
@@ -27,11 +49,14 @@ def run_macos() -> None:
     except ImportError as exc:
         raise SystemExit('Install menu support with: pip install "codex-usage[menu]"') from exc
 
-    client = AppServerClient()
+    source = UsageSource()
 
     class CodexUsageApp(rumps.App):
         def __init__(self) -> None:
-            super().__init__("Codex Usage", title="Codex …", quit_button=None)
+            super().__init__("Codex Usage", title="C …", quit_button=None)
+            self._updates: queue.SimpleQueue[tuple[Usage | None, str | None]] = (
+                queue.SimpleQueue()
+            )
             self.details = rumps.MenuItem("Loading usage…")
             self.menu = [
                 self.details,
@@ -45,10 +70,25 @@ def run_macos() -> None:
             ]
             self.timer = rumps.Timer(self.refresh, 60)
             self.timer.start()
+            self.update_timer = rumps.Timer(self._apply_updates, 0.25)
+            self.update_timer.start()
             self.refresh(None)
 
         def refresh(self, _: object) -> None:
-            threading.Thread(target=_poll, args=(client, self._updated), daemon=True).start()
+            threading.Thread(target=_poll, args=(source, self._enqueue_update), daemon=True).start()
+
+        def _enqueue_update(self, usage: Usage | None, error: str | None) -> None:
+            self._updates.put((usage, error))
+
+        def _apply_updates(self, _: object) -> None:
+            latest: tuple[Usage | None, str | None] | None = None
+            try:
+                while True:
+                    latest = self._updates.get_nowait()
+            except queue.Empty:
+                pass
+            if latest is not None:
+                self._updated(*latest)
 
         def _updated(self, usage: Usage | None, error: str | None) -> None:
             if usage:
@@ -61,7 +101,7 @@ def run_macos() -> None:
                 self.details.title = error or "Usage unavailable"
 
         def quit_app(self, _: object) -> None:
-            client.close()
+            source.close()
             rumps.quit_application()
 
     CodexUsageApp().run()
@@ -74,7 +114,7 @@ def run_windows() -> None:
     except ImportError as exc:
         raise SystemExit('Install tray support with: pip install "codex-usage[menu]"') from exc
 
-    client = AppServerClient()
+    source = UsageSource()
     current = {"usage": None}
 
     def image_for(percent: int | None):
@@ -97,12 +137,12 @@ def run_windows() -> None:
     def refresh(icon: pystray.Icon, _: object = None) -> None:
         threading.Thread(
             target=_poll,
-            args=(client, lambda usage, error: update(icon, usage, error)),
+            args=(source, lambda usage, error: update(icon, usage, error)),
             daemon=True,
         ).start()
 
     def quit_app(icon: pystray.Icon, _: object = None) -> None:
-        client.close()
+        source.close()
         icon.stop()
 
     icon = pystray.Icon(

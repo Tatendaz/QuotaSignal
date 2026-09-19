@@ -182,7 +182,7 @@ def reset_text(timestamp: int | None) -> str:
 def format_usage(usage: Usage, compact: bool = False) -> str:
     stale = "~" if usage.stale else ""
     if compact:
-        return f"Codex {usage.weekly.remaining_percent}%{stale}"
+        return f"C {usage.weekly.remaining_percent}%{stale}"
     parts = [f"week {usage.weekly.remaining_percent}% left"]
     if usage.session:
         parts.append(f"{usage.session.name} {usage.session.remaining_percent}% left")
