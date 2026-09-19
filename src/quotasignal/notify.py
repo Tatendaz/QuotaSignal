@@ -30,9 +30,9 @@ def load_thresholds() -> tuple[int, ...]:
         return DEFAULT_THRESHOLDS
     valid = sorted(
         {
-            int(item)
+            item
             for item in values
-            if isinstance(item, (int, float)) and not isinstance(item, bool) and 0 <= item <= 100
+            if isinstance(item, int) and not isinstance(item, bool) and 0 <= item <= 100
         },
         reverse=True,
     )
@@ -70,11 +70,15 @@ def pending_notifications(usage: Usage) -> list[str]:
         if state.get("reset") == reset_key and isinstance(previous, list)
         else set()
     )
-    crossed = {
+    below = {
         str(threshold)
         for threshold in load_thresholds()
         if usage.weekly.remaining_percent <= threshold
-    } - sent
+    }
+    # Forget levels the quota has climbed back above, so they can fire again when the
+    # reset time is unknown and the ledger is never cleared by a new reset key.
+    sent &= below
+    crossed = below - sent
     _write_state({"reset": reset_key, "sent": sorted(sent | crossed)})
     if not crossed:
         return []

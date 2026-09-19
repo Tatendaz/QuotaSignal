@@ -18,6 +18,7 @@ from .protocol import AppServerClient, CodexProtocolError
 
 DASHBOARD_URL = "https://chatgpt.com/codex/settings/usage"
 APP_NAME = "QuotaSignal"
+REFRESH_SECONDS = 60
 PREFERENCES_FILE = user_dir("XDG_CONFIG_HOME", ".config") / "preferences.json"
 
 
@@ -113,13 +114,24 @@ class UsageSource:
         with self._lock:
             if self._client is None:
                 self._client = self._client_factory()
-            return fetch_usage(self._client)
+            try:
+                usage = fetch_usage(self._client)
+            except CodexProtocolError:
+                self._reset()
+                raise
+            if usage.stale:
+                # The app server failed this read; start a new one on the next refresh.
+                self._reset()
+            return usage
+
+    def _reset(self) -> None:
+        if self._client is not None:
+            self._client.close()
+            self._client = None
 
     def close(self) -> None:
         with self._lock:
-            if self._client is not None:
-                self._client.close()
-                self._client = None
+            self._reset()
 
 
 def _poll(source: UsageSource, callback: Callable[[Usage | None, str | None], None]) -> None:
@@ -180,7 +192,7 @@ def run_macos() -> None:
                 None,
                 rumps.MenuItem(f"Quit {APP_NAME}", callback=self.quit_app),
             ]
-            self.timer = rumps.Timer(self.refresh, 60)
+            self.timer = rumps.Timer(self.refresh, REFRESH_SECONDS)
             self.timer.start()
             self.update_timer = rumps.Timer(self._apply_updates, 0.25)
             self.update_timer.start()
@@ -291,7 +303,19 @@ def run_windows() -> None:
             daemon=True,
         ).start()
 
+    stopped = threading.Event()
+
+    def refresh_every_minute(icon: pystray.Icon) -> None:
+        refresh(icon)
+        while not stopped.wait(REFRESH_SECONDS):
+            refresh(icon)
+
+    def start(icon: pystray.Icon) -> None:
+        icon.visible = True
+        threading.Thread(target=refresh_every_minute, args=(icon,), daemon=True).start()
+
     def quit_app(icon: pystray.Icon, _: object = None) -> None:
+        stopped.set()
         source.close()
         icon.stop()
 
@@ -306,7 +330,7 @@ def run_windows() -> None:
             pystray.MenuItem("Quit", quit_app),
         ),
     )
-    icon.run(setup=lambda active: refresh(active))
+    icon.run(setup=start)
 
 
 def run_tray() -> None:

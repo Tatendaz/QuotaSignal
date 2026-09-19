@@ -74,6 +74,10 @@ jobs:
             echo "Waiting on $pending check(s)..."
             sleep 30
           done
+          if [ "$pending" != "0" ]; then
+            echo "::error::$pending sibling check(s) still running after the wait; leaving the PR for a human."
+            exit 1
+          fi
           failed=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
             --jq '[.check_runs[] | select(.name != "Dependabot auto-merge") | select(.conclusion != null and .conclusion != "success" and .conclusion != "neutral" and .conclusion != "skipped")] | length')
           if [ "$failed" != "0" ]; then

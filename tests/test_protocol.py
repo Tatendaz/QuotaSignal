@@ -80,3 +80,28 @@ def test_client_handshake_against_fake_app_server(tmp_path):
     with AppServerClient(timeout=10, codex_bin=str(binary)) as client:
         assert client.read_rate_limits() == {"rateLimits": {}}
     assert client._process.poll() is not None
+
+
+def test_notifications_do_not_extend_the_request_deadline():
+    import threading
+    import time
+
+    client, _ = client_without_process()
+    client.timeout = 0.2
+    stop = threading.Event()
+
+    def chatter():
+        while not stop.is_set():
+            client._messages.put({"method": "account/rateLimits/updated"})
+            time.sleep(0.02)
+
+    thread = threading.Thread(target=chatter, daemon=True)
+    thread.start()
+    started = time.monotonic()
+    try:
+        with pytest.raises(CodexProtocolError, match="timed out"):
+            client._request("account/rateLimits/read")
+    finally:
+        stop.set()
+        thread.join()
+    assert time.monotonic() - started < 2

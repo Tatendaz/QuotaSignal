@@ -103,3 +103,40 @@ def test_run_tray_dispatches_to_windows(monkeypatch):
     tray.run_tray()
 
     assert called == ["windows"]
+
+
+def test_usage_source_reconnects_after_error_or_stale_read(monkeypatch):
+    from dataclasses import replace
+
+    import pytest
+
+    class FakeClient:
+        def __init__(self):
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    created = []
+
+    def factory():
+        created.append(FakeClient())
+        return created[-1]
+
+    source = tray.UsageSource(factory)
+
+    monkeypatch.setattr(tray, "fetch_usage", lambda active: replace(usage(), stale=True))
+    assert source.read().stale is True
+    assert created[0].closed is True
+
+    def fail(active):
+        raise CodexProtocolError("stopped")
+
+    monkeypatch.setattr(tray, "fetch_usage", fail)
+    with pytest.raises(CodexProtocolError):
+        source.read()
+    assert len(created) == 2 and created[1].closed is True
+
+    monkeypatch.setattr(tray, "fetch_usage", lambda active: usage())
+    assert source.read() == usage()
+    assert len(created) == 3 and created[2].closed is False

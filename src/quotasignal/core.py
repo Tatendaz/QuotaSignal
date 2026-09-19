@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import tempfile
@@ -147,7 +148,9 @@ def fetch_usage(client: AppServerClient | None = None) -> Usage:
     active = client or AppServerClient()
     try:
         usage = parse_usage(active.read_rate_limits())
-        _save_cache(usage)
+        # The cache is a convenience; a read-only disk must not hide a fresh value.
+        with contextlib.suppress(OSError):
+            _save_cache(usage)
         return usage
     except CodexProtocolError:
         cached = _load_cache()

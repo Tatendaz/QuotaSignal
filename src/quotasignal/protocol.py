@@ -8,6 +8,7 @@ import queue
 import shutil
 import subprocess
 import threading
+import time
 from pathlib import Path
 from typing import Any
 
@@ -109,9 +110,11 @@ class AppServerClient:
             request_id = self._next_id
             self._next_id += 1
             self._send({"id": request_id, "method": method, "params": params})
+            deadline = time.monotonic() + self.timeout
             while True:
                 try:
-                    message = self._messages.get(timeout=self.timeout)
+                    # One deadline per request; server notifications must not extend it.
+                    message = self._messages.get(timeout=max(0.0, deadline - time.monotonic()))
                 except queue.Empty as exc:
                     raise CodexProtocolError(f"Codex app-server timed out during {method}") from exc
                 if isinstance(message, BaseException):

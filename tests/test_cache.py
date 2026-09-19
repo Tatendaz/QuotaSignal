@@ -21,3 +21,16 @@ def test_fetch_uses_typed_stale_cache(tmp_path, monkeypatch):
     assert result.weekly.remaining_percent == 66
     assert result.session is not None
     assert result.session.remaining_percent == 88
+
+
+def test_unwritable_cache_does_not_hide_a_fresh_value(monkeypatch):
+    def refuse(usage):
+        raise OSError("read-only file system")
+
+    class Client:
+        def read_rate_limits(self):
+            return payload()
+
+    monkeypatch.setattr(core, "_save_cache", refuse)
+
+    assert core.fetch_usage(Client()).stale is False
