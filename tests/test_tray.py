@@ -46,17 +46,25 @@ def test_find_menu_bar_icon_returns_first_installed_candidate(tmp_path):
     assert tray.find_menu_bar_icon([missing, installed]) == installed
 
 
-def test_percentage_preference_defaults_to_compact_and_round_trips(tmp_path):
+def test_menu_preferences_default_to_percentage_and_icon_and_round_trip(tmp_path):
     path = tmp_path / "preferences.json"
 
-    assert tray.load_show_percentage(path) is False
-    tray.save_show_percentage(True, path)
-    assert tray.load_show_percentage(path) is True
+    assert tray.load_menu_preferences(path) == (True, True)
+    tray.save_menu_preferences(False, True, path)
+    assert tray.load_menu_preferences(path) == (False, True)
+
+
+def test_old_percentage_preference_keeps_icon_enabled(tmp_path):
+    path = tmp_path / "preferences.json"
+    path.write_text('{"show_percentage": false}', encoding="utf-8")
+
+    assert tray.load_menu_preferences(path) == (False, True)
 
 
 def test_menu_title_is_icon_only_by_default():
     assert tray.menu_bar_title(usage(), show_percentage=False, has_icon=True) == ""
     assert tray.menu_bar_title(usage(), show_percentage=True, has_icon=True) == "97%"
+    assert tray.menu_bar_title(usage(), show_percentage=True, has_icon=False) == "97%"
 
 
 def test_menu_title_falls_back_to_quota_signal_initial_when_icon_is_missing():

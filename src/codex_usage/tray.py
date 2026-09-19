@@ -41,19 +41,38 @@ def find_menu_bar_icon(candidates: Iterable[Path] | None = None) -> Path | None:
     return next((path for path in candidates if path.is_file()), None)
 
 
-def load_show_percentage(path: Path = PREFERENCES_FILE) -> bool:
-    """Return the saved menu-bar preference, defaulting to the narrow icon-only mode."""
+def load_menu_preferences(path: Path = PREFERENCES_FILE) -> tuple[bool, bool]:
+    """Return percentage and icon visibility, both enabled by default."""
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError, TypeError):
-        return False
-    return value.get("show_percentage") is True if isinstance(value, dict) else False
+        return True, True
+    if not isinstance(value, dict):
+        return True, True
+    percentage = value.get("show_percentage")
+    icon = value.get("show_icon")
+    return (
+        percentage if isinstance(percentage, bool) else True,
+        icon if isinstance(icon, bool) else True,
+    )
 
 
-def save_show_percentage(show: bool, path: Path = PREFERENCES_FILE) -> None:
+def save_menu_preferences(
+    show_percentage: bool,
+    show_icon: bool,
+    path: Path = PREFERENCES_FILE,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps({"show_percentage": show}), encoding="utf-8")
+    temporary.write_text(
+        json.dumps(
+            {
+                "show_percentage": show_percentage,
+                "show_icon": show_icon,
+            }
+        ),
+        encoding="utf-8",
+    )
     os.chmod(temporary, 0o600)
     os.replace(temporary, path)
 
@@ -68,13 +87,13 @@ def menu_bar_title(
     """Keep the status item visible even if the official icon cannot be found."""
     if usage is not None:
         percent = f"{usage.weekly.remaining_percent}%{'~' if usage.stale else ''}"
-        if has_icon:
-            return percent if show_percentage else ""
-        return f"Q {percent}"
+        if show_percentage:
+            return percent
+        return "" if has_icon else f"Q {percent}"
     marker = "!" if failed else "…"
-    if has_icon and not show_percentage:
-        return ""
-    return marker if has_icon else f"Q {marker}"
+    if show_percentage:
+        return marker
+    return "" if has_icon else f"Q {marker}"
 
 
 class UsageSource:
@@ -116,16 +135,17 @@ def run_macos() -> None:
     class CodexUsageApp(rumps.App):
         def __init__(self) -> None:
             self._icon_path = find_menu_bar_icon()
-            self._show_percentage = load_show_percentage()
+            self._show_percentage, self._show_icon = load_menu_preferences()
+            self._show_icon = self._show_icon and self._icon_path is not None
             self._usage: Usage | None = None
             super().__init__(
                 APP_NAME,
                 title=menu_bar_title(
                     None,
                     show_percentage=self._show_percentage,
-                    has_icon=self._icon_path is not None,
+                    has_icon=self._show_icon,
                 ),
-                icon=str(self._icon_path) if self._icon_path else None,
+                icon=str(self._icon_path) if self._show_icon else None,
                 template=True,
                 quit_button=None,
             )
@@ -138,6 +158,12 @@ def run_macos() -> None:
                 callback=self.toggle_percentage,
             )
             self.percentage_item.state = self._show_percentage
+            self.icon_item = rumps.MenuItem(
+                "Show icon in menu bar",
+                callback=self.toggle_icon,
+            )
+            self.icon_item.state = self._show_icon
+            self.icon_item.set_callback(self.toggle_icon if self._icon_path else None)
             self.menu = [
                 self.details,
                 rumps.MenuItem("Refresh now", callback=self.refresh),
@@ -146,6 +172,7 @@ def run_macos() -> None:
                     callback=lambda _: webbrowser.open(DASHBOARD_URL),
                 ),
                 self.percentage_item,
+                self.icon_item,
                 None,
                 rumps.MenuItem(f"Quit {APP_NAME}", callback=self.quit_app),
             ]
@@ -182,7 +209,7 @@ def run_macos() -> None:
                 self.title = menu_bar_title(
                     None,
                     show_percentage=self._show_percentage,
-                    has_icon=self._icon_path is not None,
+                    has_icon=self._show_icon,
                     failed=True,
                 )
                 self.details.title = error or "Usage unavailable"
@@ -191,14 +218,33 @@ def run_macos() -> None:
             self.title = menu_bar_title(
                 self._usage,
                 show_percentage=self._show_percentage,
-                has_icon=self._icon_path is not None,
+                has_icon=self._show_icon,
             )
 
         def toggle_percentage(self, item: object) -> None:
             self._show_percentage = not self._show_percentage
+            if not self._show_percentage and not self._show_icon:
+                self._show_icon = self._icon_path is not None
+                self.icon = str(self._icon_path) if self._show_icon else None
+                self.icon_item.state = self._show_icon
+                if not self._show_icon:
+                    self._show_percentage = True
             self.percentage_item.state = self._show_percentage
-            save_show_percentage(self._show_percentage)
+            self._save_preferences()
             self._update_title()
+
+        def toggle_icon(self, item: object) -> None:
+            self._show_icon = not self._show_icon
+            if not self._show_icon and not self._show_percentage:
+                self._show_percentage = True
+                self.percentage_item.state = True
+            self.icon_item.state = self._show_icon
+            self.icon = str(self._icon_path) if self._show_icon else None
+            self._save_preferences()
+            self._update_title()
+
+        def _save_preferences(self) -> None:
+            save_menu_preferences(self._show_percentage, self._show_icon)
 
         def quit_app(self, _: object) -> None:
             source.close()
