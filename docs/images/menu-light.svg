@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="250" viewBox="0 0 560 250" role="img" aria-label="Drawing of the QuotaSignal menu-bar item showing 66% with its menu open">
+  <rect width="560" height="250" fill="#ffffff"/>
+  <rect width="560" height="28" fill="#ececec"/>
+  <g font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" fill="#1d1d1f">
+    <rect x="296" y="3" width="44" height="22" rx="5" fill="#d2d2d7"/>
+    <text x="318" y="19" text-anchor="middle" font-weight="600">66%</text>
+    <text x="400" y="19" text-anchor="middle" fill="#6e6e73">Sat 19 Sep</text>
+    <text x="500" y="19" text-anchor="middle" fill="#6e6e73">18:12</text>
+    <rect x="200" y="34" width="300" height="196" rx="8" fill="#f6f6f6" stroke="#d2d2d7"/>
+    <text x="216" y="60" fill="#6e6e73">◉ week 66% left · resets in 3d · 5h 88% left</text>
+    <text x="216" y="88">Refresh now</text>
+    <text x="216" y="114">Open usage dashboard</text>
+    <text x="216" y="140">✓ Use percentage-only display</text>
+    <text x="216" y="166">   Use icon-only display</text>
+    <line x1="210" y1="182" x2="490" y2="182" stroke="#d2d2d7"/>
+    <text x="216" y="208">Quit QuotaSignal</text>
+  </g>
+</svg>

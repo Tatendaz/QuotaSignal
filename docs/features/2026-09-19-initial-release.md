@@ -1,4 +1,4 @@
-# Initial Codex Usage release
+# Initial QuotaSignal release
 
 **Branch:** main
 **Date:** 2026-09-19

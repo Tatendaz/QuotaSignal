@@ -1,114 +1,101 @@
 <div align="center">
 
-# ◉ Codex Usage
+# QuotaSignal
 
-**Your shared ChatGPT and Codex quota, live in the macOS menu bar or Windows system tray.**
+**The shared ChatGPT and Codex weekly quota you have left, in the macOS menu bar or the Windows system tray.**
 
-```text
-Codex 66%
-```
+[![CI](https://github.com/Tatendaz/QuotaSignal/actions/workflows/ci.yml/badge.svg)](https://github.com/Tatendaz/QuotaSignal/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-111111.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776ab.svg)](pyproject.toml)
+[![Tokens: never read](https://img.shields.io/badge/tokens-never%20read-2ea44f.svg)](#privacy-and-security)
 
-See how much weekly quota remains while you work, with optional notifications before it runs low.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/menu-dark.svg">
+  <img alt="Drawing of the QuotaSignal menu-bar item showing 66% with its menu open" src="docs/images/menu-light.svg" width="560">
+</picture>
+
+*The picture is a drawing of the macOS menu, not a screen capture.*
 
 </div>
 
+---
+
+ChatGPT and Codex draw on one weekly allowance. QuotaSignal asks your local Codex app server for that number once a minute and shows it as a percentage, for example `66%`.
+
 ## What it does
 
-- Shows weekly remaining quota as it changes.
-- Includes the shorter session window in the details menu.
-- Tracks the shared quota used by both ChatGPT and Codex.
-- Sends one notification when weekly remaining quota crosses 50%, 20%, and 10%.
-- Uses the existing Codex login through the local Codex app server. It never reads or stores your access token.
-- Runs on macOS as a menu-bar title and on Windows as a percentage icon in the notification area.
+- Shows the weekly quota that remains. The 5-hour window is in the menu.
+- Shows the percentage alone by default, which is about four characters wide. An icon-only mode is in the menu for crowded macOS menu bars.
+- Sends a notification when the weekly quota drops below 50%, 20%, and 10%. Each level fires once per weekly reset.
+- Sends one notification at launch on macOS, so you know it runs even when the menu bar has no room for the item.
+- Shows the last known value with a `~` when a fresh read fails.
+
+## Platform status
+
+| Platform | Status |
+| --- | --- |
+| macOS | Developed and used daily on macOS with Apple silicon. |
+| Windows | The unit tests pass on Windows in CI. The tray icon, the notifications, and the installer are **not yet verified on real Windows hardware**. Please [open an issue](https://github.com/Tatendaz/QuotaSignal/issues) with what you see. |
+| Linux | The command line works. There is no tray app. |
 
 ## Requirements
 
 - Python 3.10 or newer
-- Codex CLI installed and signed into the same ChatGPT account you want to monitor
-- macOS or Windows for the native status app
+- The [Codex CLI](https://developers.openai.com/codex/cli), signed in to the ChatGPT account you want to watch
 
-## Install from source
+## Install
 
 ```bash
-git clone https://github.com/Tatendaz/codex-usage.git
-cd codex-usage
+git clone https://github.com/Tatendaz/QuotaSignal.git
+cd QuotaSignal
 python3 -m pip install --user ".[menu]"
-codex-usage --check
-codex-usage tray
+quotasignal --check
+quotasignal tray
 ```
 
-On Windows, replace `python3` with `py` when needed.
+On Windows, use `py` in place of `python3`. The first read takes a few seconds while the Codex app server starts.
 
-The first request can take a few seconds while the local Codex app server starts. Later updates reuse the same process and refresh once a minute.
-
-### Start automatically
-
-The platform installers create a private virtual environment and register Codex Usage for login startup:
-
-```bash
-./scripts/install-macos.sh
-```
-
-On Windows PowerShell:
-
-```powershell
-.\scripts\install-windows.ps1
-```
+To start QuotaSignal at login, run `./scripts/install-macos.sh` or `.\scripts\install-windows.ps1`. [docs/install.md](docs/install.md) covers what the installers change, how to remove them, and how to move from the older `codex-usage` name.
 
 ## Command line
 
 ```bash
-codex-usage                 # full text output
-codex-usage --compact       # short status label
-codex-usage --json          # sanitized machine-readable output
-codex-usage --check         # verify Codex login and quota access
-codex-usage tray            # start the native status app
-```
-
-Example:
-
-```text
-◉ week 66% left · resets in 3d · 5h 88% left
+quotasignal             # ◉ week 66% left · resets in 3d · 5h 88% left
+quotasignal --compact   # Q 66%
+quotasignal --json      # sanitized snapshot
+quotasignal --check     # verify the Codex login and quota access
+quotasignal tray        # start the menu-bar or tray app
 ```
 
 ## Notifications
 
-Notifications are enabled by default at 50%, 20%, and 10% weekly quota remaining. Customize them in `~/.config/codex-usage/config.json`:
+Edit `~/.config/quotasignal/config.json` to change the levels or turn notifications off:
 
 ```json
-{
-  "notifications": {
-    "enabled": true,
-    "remaining_thresholds": [50, 20, 10]
-  }
-}
+{ "notifications": { "enabled": true, "remaining_thresholds": [50, 20, 10] } }
 ```
 
-Each threshold fires once per weekly reset.
-
-## Install as a ChatGPT and Codex plugin
-
-This repository includes both the portable Agent Plugin manifest and the Codex compatibility manifest. The bundled skill can install, configure, or troubleshoot the desktop indicator from ChatGPT Work or Codex.
-
-During development, add the repository as a marketplace source:
-
-```bash
-codex plugin marketplace add Tatendaz/codex-usage
-```
+More settings are in [docs/configuration.md](docs/configuration.md).
 
 ## Privacy and security
 
-Codex Usage launches `codex app-server` and requests the same account rate-limit snapshot used by Codex’s status UI. Authentication stays inside Codex. The cache contains only percentages, reset times, and the plan label; cache and notification-state files are created with user-only permissions where the operating system supports them.
+QuotaSignal starts `codex app-server` and sends it one request, `account/rateLimits/read`. Codex holds the login. QuotaSignal does not open Codex authentication files, and it makes no network requests of its own.
 
-## Development
+Three files are written, all with user-only permissions where the system supports them: the cache (percentages, reset times, plan label), the notification ledger, and the display preference. `tests/test_privacy.py` fails the build if an account field reaches the cache or the JSON output. Report problems through [SECURITY.md](SECURITY.md).
+
+## Plugin for ChatGPT and Codex
+
+The repository is also an Agent Plugin with a skill that installs and troubleshoots the app:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[dev,menu]"
-pytest
-ruff check .
+codex plugin marketplace add Tatendaz/QuotaSignal
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+
+QuotaSignal is an independent project. It is not affiliated with or endorsed by OpenAI. ChatGPT and Codex are trademarks of OpenAI.
 
 ## License
 
