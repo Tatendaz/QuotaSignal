@@ -2,33 +2,67 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        python: ["3.10", "3.12"]
+        python: ["3.10", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest
-      - run: ruff check .
+      - run: python -m pytest --cov=quotasignal --cov-report=term-missing
 
-  plugin:
+  lint:
+    name: Lint and format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: Validate plugin manifests
+          python-version: "3.13"
+      - run: python -m pip install "ruff>=0.8"
+      - run: ruff check .
+      - run: ruff format --check .
+
+  package:
+    name: Package smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build twine
+      - run: python -m build
+      - run: twine check dist/*
+      - name: Install the wheel and run the CLI
         run: |
-          python -m json.tool plugin.json >/dev/null
-          python -m json.tool .codex-plugin/plugin.json >/dev/null
-          test -f skills/codex-usage/SKILL.md
+          python -m pip install dist/*.whl
+          quotasignal --version
+
+  plugin:
+    name: Plugin manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python scripts/check_manifests.py

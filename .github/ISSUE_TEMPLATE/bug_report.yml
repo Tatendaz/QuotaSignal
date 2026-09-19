@@ -1,0 +1,38 @@
+name: Bug report
+description: The percentage is wrong, the item is missing, or a notification misfired.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what did you see?
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS
+        - Windows
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        macOS 15.5 or Windows 11 23H2
+        python --version:
+        quotasignal --version:
+        codex --version:
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output of `quotasignal --check`
+      description: This output holds percentages only. Never paste the contents of Codex auth files.
+      render: shell
