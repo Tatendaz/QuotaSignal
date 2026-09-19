@@ -20,5 +20,5 @@ Created the portable and Codex-compatible plugin manifests, implemented a Python
 - Displayed remaining percentage because it answers how much usable quota is left.
 - Used native lightweight Python adapters for macOS and Windows and kept quota parsing dependency-free.
 - Showed the percentage without an icon by default to reduce menu-bar width. A remembered control
-  can add the installed app's native template icon when space allows.
+  can switch to the installed app's native template icon without making the item wider.
 - Added one startup notification that confirms the app is running and explains menu-bar overflow.

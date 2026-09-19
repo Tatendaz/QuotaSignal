@@ -53,7 +53,9 @@ def load_menu_preferences(path: Path = PREFERENCES_FILE) -> tuple[bool, bool]:
     icon = value.get("show_icon")
     show_percentage = percentage if isinstance(percentage, bool) else True
     show_icon = icon if isinstance(icon, bool) else False
-    return (show_percentage, show_icon) if show_percentage or show_icon else (True, False)
+    if show_percentage:
+        return True, False
+    return (False, True) if show_icon else (True, False)
 
 
 def save_menu_preferences(
@@ -161,16 +163,16 @@ def run_macos() -> None:
             )
             self.details = rumps.MenuItem("Loading usage…")
             self.percentage_item = rumps.MenuItem(
-                "Show percentage in menu bar",
-                callback=self.toggle_percentage,
+                "Use percentage-only display",
+                callback=self.select_percentage,
             )
             self.percentage_item.state = self._show_percentage
             self.icon_item = rumps.MenuItem(
-                "Show icon in menu bar",
-                callback=self.toggle_icon,
+                "Use icon-only display",
+                callback=self.select_icon,
             )
             self.icon_item.state = self._show_icon
-            self.icon_item.set_callback(self.toggle_icon if self._icon_path else None)
+            self.icon_item.set_callback(self.select_icon if self._icon_path else None)
             self.menu = [
                 self.details,
                 rumps.MenuItem("Refresh now", callback=self.refresh),
@@ -231,23 +233,20 @@ def run_macos() -> None:
                 has_icon=self._show_icon,
             )
 
-        def toggle_percentage(self, item: object) -> None:
-            self._show_percentage = not self._show_percentage
-            if not self._show_percentage and not self._show_icon:
-                self._show_icon = self._icon_path is not None
-                self.icon = str(self._icon_path) if self._show_icon else None
-                self.icon_item.state = self._show_icon
-                if not self._show_icon:
-                    self._show_percentage = True
-            self.percentage_item.state = self._show_percentage
-            self._save_preferences()
-            self._update_title()
+        def select_percentage(self, item: object) -> None:
+            self._show_percentage = True
+            self._show_icon = False
+            self._apply_display_mode()
 
-        def toggle_icon(self, item: object) -> None:
-            self._show_icon = not self._show_icon
-            if not self._show_icon and not self._show_percentage:
-                self._show_percentage = True
-                self.percentage_item.state = True
+        def select_icon(self, item: object) -> None:
+            if self._icon_path is None:
+                return
+            self._show_percentage = False
+            self._show_icon = True
+            self._apply_display_mode()
+
+        def _apply_display_mode(self) -> None:
+            self.percentage_item.state = self._show_percentage
             self.icon_item.state = self._show_icon
             self.icon = str(self._icon_path) if self._show_icon else None
             self._save_preferences()

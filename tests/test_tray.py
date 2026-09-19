@@ -61,6 +61,13 @@ def test_old_percentage_preference_uses_compact_icon_default(tmp_path):
     assert tray.load_menu_preferences(path) == (True, False)
 
 
+def test_legacy_combined_display_migrates_to_percentage_only(tmp_path):
+    path = tmp_path / "preferences.json"
+    path.write_text('{"show_percentage": true, "show_icon": true}', encoding="utf-8")
+
+    assert tray.load_menu_preferences(path) == (True, False)
+
+
 def test_menu_title_is_icon_only_by_default():
     assert tray.menu_bar_title(usage(), show_percentage=False, has_icon=True) == ""
     assert tray.menu_bar_title(usage(), show_percentage=True, has_icon=True) == "97%"
