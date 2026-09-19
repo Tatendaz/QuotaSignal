@@ -38,12 +38,12 @@ def test_poll_reports_protocol_errors():
     assert updates == [(None, "unavailable")]
 
 
-def test_find_codex_icon_returns_first_installed_candidate(tmp_path):
+def test_find_menu_bar_icon_returns_first_installed_candidate(tmp_path):
     missing = tmp_path / "missing.png"
     installed = tmp_path / "icon-codex.png"
     installed.write_bytes(b"icon")
 
-    assert tray.find_codex_icon([missing, installed]) == installed
+    assert tray.find_menu_bar_icon([missing, installed]) == installed
 
 
 def test_percentage_preference_defaults_to_compact_and_round_trips(tmp_path):

@@ -24,8 +24,8 @@ PREFERENCES_FILE = (
 )
 
 
-def find_codex_icon(candidates: Iterable[Path] | None = None) -> Path | None:
-    """Find an official Codex app icon without copying or modifying it."""
+def find_menu_bar_icon(candidates: Iterable[Path] | None = None) -> Path | None:
+    """Find the official adaptive menu-bar asset from an installed OpenAI app."""
     if candidates is None:
         resource_roots = (
             Path("/Applications/ChatGPT.app/Contents/Resources"),
@@ -36,7 +36,7 @@ def find_codex_icon(candidates: Iterable[Path] | None = None) -> Path | None:
         candidates = (
             root / filename
             for root in resource_roots
-            for filename in ("icon-codex-dark-color.png", "icon-codex-light.png")
+            for filename in ("chatgptTemplate@2x.png", "chatgptTemplate.png")
         )
     return next((path for path in candidates if path.is_file()), None)
 
@@ -115,7 +115,7 @@ def run_macos() -> None:
 
     class CodexUsageApp(rumps.App):
         def __init__(self) -> None:
-            self._icon_path = find_codex_icon()
+            self._icon_path = find_menu_bar_icon()
             self._show_percentage = load_show_percentage()
             self._usage: Usage | None = None
             super().__init__(
@@ -126,7 +126,7 @@ def run_macos() -> None:
                     has_icon=self._icon_path is not None,
                 ),
                 icon=str(self._icon_path) if self._icon_path else None,
-                template=False,
+                template=True,
                 quit_button=None,
             )
             self._updates: queue.SimpleQueue[tuple[Usage | None, str | None]] = (
