@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "QuotaSignal: from quota to menu bar",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      650
+    ]
+  },
+  "components": [
+    {
+      "id": "codex-server",
+      "type": "backend",
+      "label": "Codex app server",
+      "sublabel": "Owns the signed-in session",
+      "pos": [
+        80,
+        160
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "quota-monitor",
+      "type": "backend",
+      "label": "QuotaSignal",
+      "sublabel": "Refreshes every 60 seconds",
+      "pos": [
+        760,
+        160
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "quota-display",
+      "type": "frontend",
+      "label": "Menu bar / tray",
+      "sublabel": "Percentage + notifications",
+      "pos": [
+        1090,
+        160
+      ],
+      "size": [
+        240,
+        84
+      ]
+    },
+    {
+      "id": "quota-cache",
+      "type": "database",
+      "label": "Local files",
+      "sublabel": "Quota + notification state",
+      "pos": [
+        760,
+        450
+      ],
+      "size": [
+        240,
+        84
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "limits-read",
+      "from": "codex-server",
+      "to": "quota-monitor",
+      "label": "account/rateLimits/read over stdio",
+      "variant": "emphasis"
+    },
+    {
+      "id": "display-update",
+      "from": "quota-monitor",
+      "to": "quota-display",
+      "label": "Quota snapshot"
+    },
+    {
+      "id": "cache-write",
+      "from": "quota-monitor",
+      "to": "quota-cache",
+      "label": "Sanitized state",
+      "labelDy": 80
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Credentials stay with Codex",
+      "items": [
+        "QuotaSignal never opens authentication files.",
+        "The Codex CLI handles access to your account."
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Local state only",
+      "items": [
+        "Percentages, reset times and plan label.",
+        "No account identifiers in the quota cache."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+[project]
+name = "QuotaSignal"
+default_base = "main"
+default_profile = "desktop-static"
+
+[roles]
+lead = "codex"
+qa = "claude"
+
+[claude]
+model = "claude-opus-5-5"
+reasoning_effort = "medium"
+
+[profiles.desktop-static.qa]
+# This project has no iOS/Android app. Static review plus actual unit results
+# does not establish a macOS/Windows desktop journey verdict.
+platforms = []
+static_review = true
+required_suites = ["python-checks"]
+required_journeys = []
+base_comparison = false
+worker_timeout_minutes = 15
+
+[profiles.desktop-static.backend]
+kind = "none"
+
+[profiles.desktop-static.perf]
+enabled = false
+
+[suites.python-checks]
+platform = "backend"
+command = '''python3 -m venv "{cache_dir}/python-checks" && "{cache_dir}/python-checks/bin/python" -m pip install -e "{checkout_dir}[dev]" && "{cache_dir}/python-checks/bin/python" -m pytest --cov=quotasignal --junitxml="{evidence_dir}/pytest.xml" && "{cache_dir}/python-checks/bin/ruff" check . && "{cache_dir}/python-checks/bin/ruff" format --check . && "{cache_dir}/python-checks/bin/python" scripts/check_manifests.py'''
+results = {kind = "junit", path = "{evidence_dir}/pytest.xml"}
+
+[github]
+publish = false
+
+[trust]
+external_prs = "static-only"

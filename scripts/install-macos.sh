@@ -19,7 +19,7 @@ fi
 
 python3 -m venv "$install_dir/venv"
 "$install_dir/venv/bin/python" -m pip install --upgrade pip
-"$install_dir/venv/bin/python" -m pip install "$repo_dir[menu]"
+"$install_dir/venv/bin/python" -m pip install "${repo_dir}[menu]"
 mkdir -p "$launch_agents"
 
 sed \
