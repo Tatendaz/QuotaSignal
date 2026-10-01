@@ -29,8 +29,11 @@ enabled = false
 
 [suites.python-checks]
 platform = "backend"
-command = '''python3 -m venv "{cache_dir}/python-checks" && "{cache_dir}/python-checks/bin/python" -m pip install -e "{checkout_dir}[dev]" && "{cache_dir}/python-checks/bin/python" -m pytest --cov=quotasignal --junitxml="{evidence_dir}/pytest.xml" && "{cache_dir}/python-checks/bin/ruff" check . && "{cache_dir}/python-checks/bin/ruff" format --check . && "{cache_dir}/python-checks/bin/python" scripts/check_manifests.py'''
+command = '''"$QUOTASIGNAL_QA_PYTHON" -m venv --clear "{cache_dir}/python-checks" && "{cache_dir}/python-checks/bin/python" -m pip install -e "{checkout_dir}[dev]" && "{cache_dir}/python-checks/bin/python" -m pytest --cov=quotasignal --junitxml="{evidence_dir}/pytest.xml" && "{cache_dir}/python-checks/bin/ruff" check . && "{cache_dir}/python-checks/bin/ruff" format --check . && "{cache_dir}/python-checks/bin/python" scripts/check_manifests.py'''
 results = {kind = "junit", path = "{evidence_dir}/pytest.xml"}
+
+[suites.python-checks.env]
+QUOTASIGNAL_QA_PYTHON = "python3"
 
 [github]
 publish = false

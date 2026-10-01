@@ -10,7 +10,7 @@ codeandconfirm review --branch chore/open-source --base main --criteria-file /tm
 
 The `desktop-static` profile runs an independent Claude static worker and a required Python suite with JUnit evidence in an isolated worktree. There are no mobile apps to build. A PASS covers this review scope only; it does not certify the macOS menu, Windows tray, notifications, installers, or physical-device performance. macOS live quota access was checked separately; Windows desktop verification remains on the roadmap.
 
-Source and review context reach the configured model provider. No quota authentication files are needed by these tests. Machine overrides belong in `.codeandconfirm.local.toml`, which is ignored.
+Source and review context reach the configured model provider. No quota authentication files are needed by these tests. The suite uses `QUOTASIGNAL_QA_PYTHON` when set; it must point to Python 3.10+. Machine overrides belong in `.codeandconfirm.local.toml`, which is ignored.
 
 ## Backup PR reviewer
 

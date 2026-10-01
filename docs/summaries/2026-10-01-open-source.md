@@ -21,3 +21,8 @@ Identified the app as QuotaSignal and recovered its temporary macOS launch entry
 Prepared README, security and community documentation, an architecture diagram, workflow pins, runtime matrix coverage, docs gates, and automatic Dependabot patch/minor merges after required checks pass. Ran local tests, lint, package checks, and diagram checks before publication. GitHub settings are presented separately for approval.
 
 Claude confirmed the existing open-source layout and the owner's earlier preference for zero mandatory approvals with strict checks. CodeAndConfirm is configured for static review and actual Python test evidence only, with desktop limitations stated explicitly. A history scan found no matches for common GitHub, OpenAI, AWS, or private-key patterns.
+
+7. "it knows my usual setup"
+8. "repo is empty where are the files?"
+
+The first CodeAndConfirm run found that bash selected macOS system Python 3.9 for its suite and that Git quoted non-ASCII docs paths. Fixed the suite with a configurable interpreter in the ignored machine override and a fresh environment, fixed path quoting, and added regression tests for literal branch slugs. Published the existing main source while the open-source setup receives its independent reviews.

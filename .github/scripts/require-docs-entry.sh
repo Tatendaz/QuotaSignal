@@ -53,7 +53,7 @@ fi
 
 # Only files this PR itself adds or renames count. An entry left in the tree
 # by an older branch must not satisfy a new PR.
-added="$(git diff --name-only --diff-filter=AR "$RANGE" -- "$DOCS_DIR/")"
+added="$(git -c core.quotePath=false diff --name-only --diff-filter=AR "$RANGE" -- "$DOCS_DIR/")"
 
 matched=""
 while IFS= read -r path; do

@@ -2,8 +2,6 @@ name: Dependabot auto-merge
 on:
   pull_request:
     branches: [main]
-  pull_request_review:
-    types: [submitted]
 permissions:
   contents: write
   pull-requests: write
@@ -31,5 +29,6 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
+          sleep 20 # Allow required checks to register before querying them.
           gh pr checks "$PR_URL" --required --watch --fail-fast --interval 30
           gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
