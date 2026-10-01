@@ -28,3 +28,5 @@ Claude confirmed the existing open-source layout and the owner's earlier prefere
 The first CodeAndConfirm run found that bash selected macOS system Python 3.9 for its suite and that Git quoted non-ASCII docs paths. Fixed the suite with a configurable interpreter in the ignored machine override and a fresh environment, fixed path quoting, and added regression tests for literal branch slugs. Published the existing main source while the open-source setup receives its independent reviews.
 
 GitHub CI exposed Windows selecting the unconfigured WSL bash launcher for the shell-gate regression tests. Selected native Git Bash explicitly on Windows and enforced LF for shell scripts. The app tests did not change. Both review findings about required GitHub checks and approvals are intentional settings dependencies, already documented and awaiting the owner's approval.
+
+After the shell tests passed on Windows, CI revealed that the existing Unix-only app-server integration test left Windows coverage at 63%, below the unchanged 65% gate. Made its real subprocess launch portable using the Python executable, keeping the same handshake and quota assertions on every OS.
