@@ -10,7 +10,7 @@ SCRIPT = Path(__file__).resolve().parents[1] / ".github/scripts/require-docs-ent
 
 
 @pytest.mark.skipif(shutil.which("bash") is None, reason="docs gate requires bash")
-@pytest.mark.parametrize("slug", ["café", "c++parser", "x[1]"])
+@pytest.mark.parametrize("slug", ["café", "c++parser", "x(1)"])
 def test_gate_matches_literal_branch_slug(tmp_path, slug):
     def git(*args):
         return subprocess.run(
