@@ -73,7 +73,7 @@ QuotaSignal makes no network requests of its own and has no telemetry. It asks t
 
 The quota cache at `~/.cache/quotasignal/usage.json` holds percentages, reset timestamps, and a plan label. `~/.config/quotasignal/` holds display preferences and notification state. No account identifiers are written to the quota cache or JSON output. These paths can be moved with `XDG_CONFIG_HOME` and `XDG_CACHE_HOME`.
 
-Choose **Quit QuotaSignal** to stop polling. Set `notifications.enabled` to `false` in the configuration to stop notifications. [Data and credential promises](SECURITY.md).
+Choose **Quit QuotaSignal** on macOS or **Quit** on Windows to stop polling. Set `notifications.enabled` to `false` in the configuration to stop notifications. [Data and credential promises](SECURITY.md).
 
 ## Limits
 

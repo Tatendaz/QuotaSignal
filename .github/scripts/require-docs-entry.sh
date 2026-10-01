@@ -31,7 +31,7 @@
 #      be exactly a `YYYY-MM-DD-` date followed by the whole slug and `.md`.
 #
 # Keeping it in a file also means shellcheck covers it (the CI shell job
-# discovers scripts from `git ls-files`) and that the gate can be run by hand
+# checks `scripts/*.sh` and `.github/scripts/*.sh`) and that the gate can be run by hand
 # against a real branch before pushing.
 # ---------------------------------------------------------------------------
 
