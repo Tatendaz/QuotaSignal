@@ -1,40 +1,20 @@
 # Security Policy
 
-## Reporting a vulnerability
+Report security problems through [GitHub's private advisory form](https://github.com/Tatendaz/QuotaSignal/security/advisories/new), not public issues. Include the affected version, reproduction steps, and impact. Reports are reviewed by @Tatendaz. This is a single-maintainer project with no response-time guarantee.
 
-Please do **not** report security vulnerabilities through public GitHub
-issues, discussions, or pull requests.
+## Supported versions
 
-Instead, use GitHub's private vulnerability reporting: open the
-[**Security** tab](https://github.com/Tatendaz/QuotaSignal/security) of this repository
-and click **"Report a vulnerability"**, or go directly to
-<https://github.com/Tatendaz/QuotaSignal/security/advisories/new>.
+| Version | Security fixes |
+| --- | --- |
+| 0.1.x and the default branch | Supported |
+| Older development snapshots | Upgrade to 0.1.x |
 
-### What to include
+## Credential and data promises
 
-- A description of the vulnerability and its potential impact
-- Steps to reproduce, ideally a minimal proof of concept
-- The affected version, branch, or commit
-- Any known workarounds
+1. QuotaSignal requests quota only from `codex app-server` using `account/rateLimits/read`.
+2. It does not open Codex or ChatGPT authentication files or persist authentication tokens.
+3. The quota cache and JSON output contain percentages, reset timestamps, and a plan label, without account identifiers.
+4. QuotaSignal opens no network connections itself and has no telemetry. The `codex app-server` process it launches contacts OpenAI using the user's existing login to read the quota, and **Open usage dashboard** opens `chatgpt.com` in the default browser.
+5. Cache, notification state, and display preference files use user-only permissions where the operating system supports them. Quitting stops quota polling.
 
-### What to expect
-
-- An acknowledgement of your report, normally within one week
-- Updates while the report is triaged and a fix is developed
-- Credit once a fix is released, unless you prefer otherwise
-
-Please allow a reasonable window to investigate and release a fix before
-disclosing the issue publicly.
-
-## Scope
-
-The code on the default branch of this repository. Vulnerabilities in
-third-party dependencies should be reported upstream to the affected
-project, though flagging how this project is affected is welcome.
-
-## What counts as a vulnerability here
-
-QuotaSignal must never read, print, store, or send Codex or ChatGPT
-authentication tokens, and must never write account identifiers to disk.
-Any path that breaks this rule is in scope, including log output, the
-cache file, the notification state file, and the JSON output of the CLI.
+Token exposure, account identifiers written to the quota cache, unintended network requests, and unauthorized code execution are vulnerabilities. Quota inaccuracies, a hidden menu item, unsigned build warnings, and upstream service downtime are ordinary bugs unless they create a security impact. Report dependency vulnerabilities upstream and privately describe how they affect this app.

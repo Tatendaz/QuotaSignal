@@ -1,40 +1,48 @@
 name: PR Gate
-
 on:
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   docs-gate:
     name: Docs gate (features + summaries)
-    # Dependabot bumps carry no feature work, so they skip the docs gate.
     if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Require feature and summary docs
-        shell: bash
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          changed="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
-          echo "$changed" | grep -q '^docs/features/.*\.md$' || { echo 'Missing docs/features entry'; exit 1; }
-          echo "$changed" | grep -q '^docs/summaries/.*\.md$' || { echo 'Missing docs/summaries entry'; exit 1; }
-
+          set -euo pipefail
+          slug="${HEAD_REF#*/}"
+          slug="${slug//\//-}"
+          bash .github/scripts/require-docs-entry.sh docs/features "$slug" "origin/$BASE_REF...HEAD"
+          bash .github/scripts/require-docs-entry.sh docs/summaries "$slug" "origin/$BASE_REF...HEAD"
   new-code-has-tests:
     name: New code has new tests
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Require tests with Python source changes
-        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          changed="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          set -euo pipefail
+          changed="$(git diff --name-only "origin/$BASE_REF...HEAD")"
           source_changed="$(echo "$changed" | grep '^src/.*\.py$' || true)"
           tests_changed="$(echo "$changed" | grep '^tests/test_.*\.py$' || true)"
           if [ -n "$source_changed" ] && [ -z "$tests_changed" ]; then

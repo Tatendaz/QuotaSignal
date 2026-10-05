@@ -56,9 +56,8 @@ def test_find_codex_honours_new_and_legacy_override(tmp_path, monkeypatch):
         find_codex()
 
 
-FAKE_SERVER = """#!{python}
-import json, sys
-assert sys.argv[1:] == ["app-server", "--stdio"]
+FAKE_SERVER = """import json, sys
+assert sys.argv[1:] == ["--stdio"]
 for line in sys.stdin:
     message = json.loads(line)
     if message.get("method") == "initialize":
@@ -69,15 +68,14 @@ for line in sys.stdin:
 """
 
 
-@pytest.mark.skipif(__import__("os").name == "nt", reason="needs an executable script")
-def test_client_handshake_against_fake_app_server(tmp_path):
+def test_client_handshake_against_fake_app_server(tmp_path, monkeypatch):
     import sys
 
-    binary = tmp_path / "codex"
-    binary.write_text(FAKE_SERVER.format(python=sys.executable))
-    binary.chmod(0o755)
+    # Python executes the fake app-server subcommand as a script on every OS.
+    (tmp_path / "app-server").write_text(FAKE_SERVER.format(), encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
 
-    with AppServerClient(timeout=10, codex_bin=str(binary)) as client:
+    with AppServerClient(timeout=10, codex_bin=sys.executable) as client:
         assert client.read_rate_limits() == {"rateLimits": {}}
     assert client._process.poll() is not None
 

@@ -31,3 +31,9 @@ Say in the pull request which platform you ran the tray app on. Windows reports 
 ## Releases
 
 Bump the version in `src/quotasignal/__init__.py`, `pyproject.toml`, `plugin.json`, and `.codex-plugin/plugin.json` (`scripts/check_manifests.py` checks they agree). Move the `Unreleased` notes in `CHANGELOG.md` under the new version, tag `vX.Y.Z`, and publish a GitHub release. The release starts the desktop build workflow.
+
+## Community and review
+
+Follow the [Code of Conduct](CODE_OF_CONDUCT.md). Reports can be sent privately to the maintainer at the address there. Dependabot patch and minor updates merge automatically only after required checks pass; major updates need review.
+
+CodeAndConfirm runs an independent static review and the unit suite using `codeandconfirm.toml`. It does not certify desktop GUI behavior. See [review scope](docs/review.md).
