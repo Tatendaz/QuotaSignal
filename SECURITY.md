@@ -14,7 +14,7 @@ Report security problems through [GitHub's private advisory form](https://github
 1. QuotaSignal requests quota only from `codex app-server` using `account/rateLimits/read`.
 2. It does not open Codex or ChatGPT authentication files or persist authentication tokens.
 3. The quota cache and JSON output contain percentages, reset timestamps, and a plan label, without account identifiers.
-4. The app makes no network requests of its own and has no telemetry. The Codex CLI handles account access using the user's existing login.
+4. QuotaSignal opens no network connections itself and has no telemetry. The `codex app-server` process it launches contacts OpenAI using the user's existing login to read the quota, and **Open usage dashboard** opens `chatgpt.com` in the default browser.
 5. Cache, notification state, and display preference files use user-only permissions where the operating system supports them. Quitting stops quota polling.
 
 Token exposure, account identifiers written to the quota cache, unintended network requests, and unauthorized code execution are vulnerabilities. Quota inaccuracies, a hidden menu item, unsigned build warnings, and upstream service downtime are ordinary bugs unless they create a security impact. Report dependency vulnerabilities upstream and privately describe how they affect this app.
