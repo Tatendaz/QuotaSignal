@@ -88,6 +88,7 @@ Choose **Quit QuotaSignal** on macOS or **Quit** on Windows to stop polling. Set
 
 | Page | Contents |
 | --- | --- |
+| [Project page](https://tatendaz.github.io/QuotaSignal/) | One-page overview |
 | [Install](docs/install.md) | Login startup, migration, removal |
 | [Configuration](docs/configuration.md) | Notifications, paths, display modes |
 | [Architecture](docs/diagrams/README.md) | Diagram source and regeneration |
