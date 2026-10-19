@@ -47,7 +47,7 @@ Change the levels, or turn notifications off, in `~/.config/quotasignal/config.j
 
 ## How it works
 
-- QuotaSignal starts `codex app-server` and requests `account/rateLimits/read` over stdio once a minute. Codex owns the signed-in session.
+- QuotaSignal starts `codex app-server` and requests `account/rateLimits/read` over stdio. The tray asks once a minute. The command line asks when you run it and reuses a 60-second cache. Codex owns the signed-in session.
 - It makes no network requests of its own, has no telemetry, and does not read authentication files. Codex talks to OpenAI with your existing ChatGPT login.
 - `~/.cache/quotasignal/usage.json` holds percentages, reset times, and a plan label. No account identifiers are written to the cache or to `--json` output.
 

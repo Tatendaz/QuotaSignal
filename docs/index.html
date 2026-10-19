@@ -81,7 +81,7 @@
   a:hover{text-decoration:underline}
   a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
   .topbar{display:flex;justify-content:flex-end;padding-top:22px}
-  .theme-btn{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 14px;font:500 13.5px/1.4 inherit;font-family:inherit;cursor:pointer}
+  .theme-btn{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:13.5px;font-weight:500;line-height:1.4;cursor:pointer}
   .theme-btn:hover{color:var(--text);border-color:var(--muted)}
   .hero .wrap{padding-top:clamp(48px,8vw,76px);padding-bottom:var(--gap-section)}
   .mark{color:var(--accent);font-size:clamp(30px,4.5vw,40px);line-height:1;display:block;margin-bottom:14px}
@@ -164,7 +164,7 @@
 <body>
 
 <div class="wrap topbar">
-  <button class="theme-btn" id="theme-toggle" type="button" aria-label="Switch color theme">Light mode</button>
+  <button class="theme-btn" id="theme-toggle" type="button">Light mode</button>
 </div>
 
 <main>
@@ -243,8 +243,8 @@
     </figure>
     <div class="how" style="margin-top:36px">
       <div class="how-row">
-        <h3>Asks Codex, once a minute</h3>
-        <p>QuotaSignal starts <code>codex app-server</code> and requests <code>account/rateLimits/read</code> over stdio. Codex owns the signed-in session.</p>
+        <h3>Asks the local Codex</h3>
+        <p>QuotaSignal starts <code>codex app-server</code> and requests <code>account/rateLimits/read</code> over stdio. The tray asks once a minute. The command line asks when you run it and reuses a 60-second cache. Codex owns the signed-in session.</p>
       </div>
       <div class="how-row">
         <h3>No network calls of its own</h3>
