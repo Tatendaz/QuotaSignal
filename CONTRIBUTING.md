@@ -34,6 +34,6 @@ Bump the version in `src/quotasignal/__init__.py`, `pyproject.toml`, `plugin.jso
 
 ## Community and review
 
-Follow the [Code of Conduct](CODE_OF_CONDUCT.md). Reports can be sent privately to the maintainer at the address there. Dependabot patch and minor updates merge automatically only after CI passes and a review runs on the PR; major updates need the maintainer.
+Follow the [Code of Conduct](CODE_OF_CONDUCT.md). Reports can be sent privately to the maintainer at the address there. Eligible Dependabot patch and minor updates merge automatically once every `merge-when-clean.yml` gate passes: checks finished without a failure, a review ran on the current head, no review requests changes, and no review threads are open. Major updates (including `0.x` minor bumps) need the maintainer.
 
 CodeAndConfirm runs an independent static review and the unit suite using `codeandconfirm.toml`. It does not certify desktop GUI behavior. See [review scope](docs/review.md).
