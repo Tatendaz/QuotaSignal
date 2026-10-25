@@ -5,7 +5,7 @@
 
 ## Summary
 
-Updates `.github/workflows/merge-when-clean.yml` from template v2 to v5 (sha256 `1c493dd7...`), unchanged.
+Updates `.github/workflows/merge-when-clean.yml` from template v2 to v6 (sha256 `af7e7bd9...`), unchanged.
 
 ## Motivation
 
@@ -13,7 +13,7 @@ v2 checked "changes requested" only through `reviewDecision`. That field is null
 
 ## What changed
 
-- `.github/workflows/merge-when-clean.yml`: template v5.
+- `.github/workflows/merge-when-clean.yml`: template v6.
 - `docs/review.md`: the merge gate list is now complete (other commit statuses, merge conflicts, label/path skips, hold file).
 
 ## Notes
@@ -21,3 +21,5 @@ v2 checked "changes requested" only through `reviewDecision`. That field is null
 This repo has no `.github/merge-hold-paths`, so the hold-file feature does nothing here. This PR touches the workflow file itself, so merge-when-clean will not merge it. It is merged by hand under the same rules.
 
 v5 adds `set +e`: GitHub runs `shell: bash` as `bash -e -o pipefail`, so in v4 a grep "no match" (exit 1) killed the job on every PR that was not held.
+
+v6 makes the run fail (exit 1) when reading the default branch or listing open PRs fails, instead of passing as "no open PRs".
