@@ -5,7 +5,7 @@
 
 ## Summary
 
-Updates `.github/workflows/merge-when-clean.yml` from template v2 to v4 (sha256 `f0c005a3...`), unchanged.
+Updates `.github/workflows/merge-when-clean.yml` from template v2 to v5 (sha256 `1c493dd7...`), unchanged.
 
 ## Motivation
 
@@ -19,3 +19,5 @@ v2 checked "changes requested" only through `reviewDecision`. That field is null
 ## Notes
 
 This repo has no `.github/merge-hold-paths`, so the hold-file feature does nothing here. This PR touches the workflow file itself, so merge-when-clean will not merge it. It is merged by hand under the same rules.
+
+v5 adds `set +e`: GitHub runs `shell: bash` as `bash -e -o pipefail`, so in v4 a grep "no match" (exit 1) killed the job on every PR that was not held.

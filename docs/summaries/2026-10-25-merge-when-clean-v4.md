@@ -10,3 +10,4 @@
 ## Work
 
 Checked the template's sha256 (`f0c005a3...`) and copied it unchanged. Ran `actionlint` and `zizmor`. Completed the gate list in `docs/review.md`, which the backup review on #10 flagged as missing two gates.
+- Coordinator update: replaced v4 with v5 (sha256 `1c493dd7...`), which adds `set +e` after `set -uo pipefail`.
