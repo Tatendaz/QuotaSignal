@@ -1,7 +1,0 @@
-# CodeRabbit configuration: https://docs.coderabbit.ai/reference/yaml-template
-reviews:
-  auto_review:
-    # Dependabot PRs pass CI and merge through dependabot-auto-merge.yml. An auto-review
-    # on each one would spend the shared CodeRabbit review budget.
-    ignore_usernames:
-      - "dependabot[bot]"
