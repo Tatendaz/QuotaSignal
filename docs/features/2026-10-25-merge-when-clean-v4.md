@@ -13,7 +13,7 @@ v2 checked "changes requested" only through `reviewDecision`. That field is null
 
 ## What changed
 
-- `.github/workflows/merge-when-clean.yml`: template v4.
+- `.github/workflows/merge-when-clean.yml`: template v5.
 - `docs/review.md`: the merge gate list is now complete (other commit statuses, merge conflicts, label/path skips, hold file).
 
 ## Notes
