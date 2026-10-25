@@ -1,6 +1,6 @@
 # Review scope
 
-CI tests the Python package across Python 3.10–3.14 on macOS, Windows, and Linux. It checks formatting, package construction, plugin manifests, and dependencies on pull requests. Static analysis and unit tests cannot establish every real desktop interaction.
+CI tests the Python package across Python 3.10–3.14 on macOS, Windows, and Linux. It checks formatting, package construction, plugin manifests, and dependencies on pull requests. A zizmor job scans the workflows and fails on high-severity findings. Static analysis and unit tests cannot establish every real desktop interaction.
 
 ## CodeAndConfirm
 
@@ -18,4 +18,4 @@ The owner's existing local `review-failover` service supplies an independent rev
 
 ## Dependency merges
 
-Dependabot groups weekly patch/minor updates. The workflow waits for required checks and pins the merge to the reviewed head. Major updates remain manual. Missing required checks, failing checks, and timeouts stop the workflow. Repository auto-merge and required checks must be enabled for the workflow to work.
+Dependabot groups monthly patch/minor updates and waits 7 days after a release before it proposes it (security updates do not wait). `merge-when-clean.yml` merges a Dependabot PR, or the owner's `security/*` or `automerge`-labelled PR, once CI is green, a real review ran on its head and no threads are open. The workflow waits for required checks and pins the merge to the reviewed head. Major updates remain manual. Missing required checks, failing checks, and timeouts stop the workflow. Repository auto-merge and required checks must be enabled for the workflow to work.
