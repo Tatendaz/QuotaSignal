@@ -2,15 +2,23 @@ version: 2
 updates:
   - package-ecosystem: pip
     directory: /
+    # Monthly keeps the review volume low; security updates still open at once.
     schedule:
-      interval: weekly
+      interval: monthly
+    # Hold version updates until a release is 7 days old. Security updates ignore this.
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 3
     groups:
       updates:
         update-types: [patch, minor]
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 3
     groups:
       updates:
         update-types: [patch, minor]

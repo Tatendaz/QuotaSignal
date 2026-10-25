@@ -3,9 +3,7 @@ on:
   pull_request:
     branches: [main]
 permissions:
-  contents: write
-  pull-requests: write
-  checks: read
+  contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -15,6 +13,11 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    # Merging the PR needs write access; only this job, and only for Dependabot's PRs.
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
     steps:
       - name: Fetch Dependabot metadata
         id: meta
